@@ -4,6 +4,8 @@
 
 线上地址：<https://themarter.github.io/>
 
+本地工作副本：`D:\迅雷下载\marter's space`（以此为准）
+
 ## 目录结构
 
 ```
@@ -12,6 +14,11 @@ origin/                     # 页面源文件（内容）
 ├── 404.html                # 404
 ├── metadata.yaml           # 首页的标题 / 描述
 ├── favicon.svg
+├── assets/spine/           # 看板娘资源（Spine 3.8 运行时 + 特蕾西娅模型）
+│   ├── spine-webgl-3.8.js
+│   ├── theresa-widget.js   # 挂件逻辑（拖动 / 点击换动作 / 位置记忆）
+│   ├── theresa-widget.css
+│   └── theresa/            # atlas + skel + png（enemy_1554_lrtsia）
 └── <slug>/
     ├── index.html          # 页面正文（片段，自动套用全局布局）
     └── metadata.yaml       # 标题 / 描述 / 日期
@@ -20,6 +27,7 @@ template/                   # 版式（壳）
 ├── layout.html             # 主模板：<head>、页头、页脚，全局唯一
 ├── static/
 │   ├── analytics.html      # ★ 统计脚本模板（全局注入所有页面）
+│   ├── theresa.html        # ★ 看板娘引用（全局注入所有页面）
 │   └── styles.html         # 全站样式
 ├── ejs/
 │   └── pages-list.ejs      # 首页「全部页面」索引的 EJS 模板
@@ -70,6 +78,29 @@ published: true  # 可选，false 则不出现在首页列表
 
 首页的页面列表由 `template/ejs/pages-list.ejs` 渲染，构建时扫描 `origin/` 自动生成，
 无需手工维护。
+
+## 特蕾西娅看板娘（右下角）
+
+全站生效，由 `template/static/theresa.html` 引入，`template/layout.html` 在 `</body>` 前挂载。
+
+- **拖动**：按住模型拖到任意位置，位置记在 `localStorage`，下次访问还在原处；刷新后不跑位，窗口变小时会自动收进可视区域
+- **单击**：换一个动作（`C1_Skill_3` / `C1_Skill_4` / `C3_Attack`，放完自动回到 `C1_Idle`）
+- **双击**：归位到右下角
+- **右上角 ×**：本次会话隐藏（关掉标签页再开就又有了）
+- 窗口宽度 < 480px 时自动不加载，省流量；`document.hidden` 时暂停渲染
+
+技术：官方 spine-webgl **3.8** 运行时（`origin/assets/spine/spine-webgl-3.8.js`）+ RenderBuild 静态托管。
+模型是 `enemy_1554_lrtsia`（3.8 二进制 skel / atlas / png，合计约 470KB），首屏用 `defer` 异步加载，
+不阻塞页面；模型数据用 `fetch` 拿，纹理预加载后才建 `GLTexture`（否则 atlas 的 UV 会按 0 尺寸算错）。
+
+换模型：把新的 `.atlas` / `.skel` / `.png` 放进 `origin/assets/spine/theresa/`，
+改 `theresa-widget.js` 顶部 `CONFIG` 的 `atlas` / `skel` / `texture` / `idle` / `actions` 即可。
+同目录下可选的另两只：`enemy_3006_tersia`（“魔王”）、`enemy_3007_lrssia`（“演出”），
+从 [Ark-Models](https://github.com/isHarryh/Ark-Models) 的 `models_enemies/` 按需下载。
+
+> 素材版权归上海鹰角网络所有，仓库说明为“仅供学习交流，请勿商用”。
+
+不想用看板娘了：删掉 `template/layout.html` 里 `{{static/theresa.html}}` 那一行即可。
 
 ## 统计脚本
 

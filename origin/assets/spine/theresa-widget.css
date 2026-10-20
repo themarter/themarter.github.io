@@ -1,0 +1,80 @@
+/* ---------- 特蕾西娅看板娘 ---------- */
+.theresa-widget {
+    position: fixed;
+    right: 10px;
+    bottom: 0;
+    z-index: 50;
+    width: 248px;
+    height: 400px;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    transition: opacity 0.25s ease;
+}
+
+.theresa-widget.is-dragging {
+    transition: none;
+}
+
+.theresa-widget canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+    cursor: grab;
+    touch-action: none;
+    filter: drop-shadow(0 10px 22px rgba(25, 26, 28, 0.18));
+}
+
+.theresa-widget.is-dragging canvas {
+    cursor: grabbing;
+}
+
+.theresa-widget__close {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--line, #e6e2dc);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--muted, #6b7076);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    pointer-events: auto;
+    opacity: 0;
+    transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.theresa-widget:hover .theresa-widget__close,
+.theresa-widget__close:focus-visible {
+    opacity: 1;
+}
+
+.theresa-widget__close:hover {
+    color: var(--ink, #191a1c);
+}
+
+@media (max-width: 900px) {
+    .theresa-widget {
+        width: 208px;
+        height: 336px;
+    }
+}
+
+@media (max-width: 640px) {
+    .theresa-widget {
+        width: 168px;
+        height: 272px;
+    }
+}
+
+@media (max-width: 480px) {
+    .theresa-widget {
+        display: none;
+    }
+}
