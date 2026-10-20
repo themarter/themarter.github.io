@@ -1,0 +1,24 @@
+{
+    "outputDirectory": "./public/",
+    "templateDirectory": "./template/",
+    "originDirectory": "./origin/",
+    "retries": 3,
+    "jsBeautify": {
+        "indent_size": 4,
+        "indent_char": " ",
+        "indent_with_tabs": false
+    },
+    "page": {
+        "siteName": "Marter 的个人空间",
+        "shortName": "Marter",
+        "author": "Marter",
+        "siteUrl": "https://themarter.github.io/",
+        "githubUserName": "themarter",
+        "githubUrl": "https://github.com/themarter",
+        "repoUrl": "https://github.com/themarter/themarter.github.io",
+        "lang": "zh-CN",
+        "defaultScript": ""
+    },
+    "mainTemplate": "layout.html",
+    "metadataFileName": "metadata.yaml"
+}

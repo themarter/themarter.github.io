@@ -1,0 +1,18 @@
+<%# 页面索引片段：由 program/build.js 在构建前用 EJS 渲染，输出到 template/generated/pages-list.html %>
+<% if (!pages || pages.length === 0) { %>
+<p class="empty">这里还空着。等第一页内容落地。</p>
+<% } else { %>
+<ul class="page-list">
+    <% pages.forEach(function (page) { %>
+    <li>
+        <a class="page-link" href="<%= page.url %>">
+            <span class="page-title"><%= page.title %></span>
+            <% if (page.description) { %>
+            <span class="page-desc"><%= page.description %></span>
+            <% } %>
+            <span class="page-meta"><% if (page.date) { %><%= page.date %> · <% } %><%= page.url %></span>
+        </a>
+    </li>
+    <% }); %>
+</ul>
+<% } %>

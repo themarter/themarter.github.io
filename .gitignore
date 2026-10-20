@@ -1,0 +1,11 @@
+node_modules/
+public/
+log/
+
+# 构建时由 program/build.js 生成，不入库
+template/generated/*
+!template/generated/.gitkeep
+
+.DS_Store
+Thumbs.db
+*.log

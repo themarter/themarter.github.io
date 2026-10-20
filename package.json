@@ -1,0 +1,19 @@
+{
+    "name": "themarter.github.io",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Marter 的个人空间 · 基于 RenderBuild 的静态站点",
+    "scripts": {
+        "build": "node program/build.js",
+        "dev": "node program/dev.js",
+        "publish": "node program/publish.js"
+    },
+    "author": "Marter",
+    "license": "MIT",
+    "dependencies": {
+        "cheerio": "^1.0.0",
+        "ejs": "^3.1.10",
+        "js-yaml": "^4.1.0",
+        "render-build": "^0.4.0"
+    }
+}

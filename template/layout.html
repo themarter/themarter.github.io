@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="{{{lang}}}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><% if (typeof pagetype !== 'undefined' && pagetype === 'home') { %>{{{siteName}}}<% } else if (typeof title !== 'undefined' && title) { %><%= title %> · {{{siteName}}}<% } else { %>{{{siteName}}}<% } %></title>
+    <% if (typeof description !== 'undefined' && description) { %>
+    <meta name="description" content="<%= description %>">
+    <% } %>
+    <meta name="author" content="{{{author}}}">
+    <meta property="og:site_name" content="{{{siteName}}}">
+    <meta property="og:title" content="<% if (typeof title !== 'undefined' && title) { %><%= title %><% } else { %>{{{siteName}}}<% } %>">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<%= url %>">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="canonical" href="<%= url %>">
+
+    {{static/styles.html}}
+
+    <!-- 全局统计脚本：所有页面统一从这里注入（template/static/analytics.html） -->
+    {{static/analytics.html}}
+</head>
+
+<body>
+    <header class="site-header">
+        <a class="brand" href="/">{{{siteName}}}</a>
+        <nav class="site-nav">
+            <a href="/">首页</a>
+            <a href="{{{githubUrl}}}" target="_blank" rel="noopener">GitHub</a>
+        </nav>
+    </header>
+
+    <main class="site-main">
+        {{{doc}}}
+    </main>
+
+    <footer class="site-footer">
+        <span>© <span id="year">2026</span> {{{author}}} · 保持记录</span>
+        <span>Built with <a href="https://github.com/RavelloH/RenderBuild" target="_blank" rel="noopener">RenderBuild</a></span>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
