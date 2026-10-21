@@ -103,7 +103,7 @@
                 root.classList.remove('is-loading');
                 setPlaying(false);
                 if (err && err.name === 'NotAllowedError') {
-                    say('浏览器拦下了自动播放，点一下播放键就好。');
+                    say('点一下播放键，有东西想让你听听。');
                 } else if (err && err.name === 'NotSupportedError') {
                     say('这个浏览器播放不了这段音频。');
                 } else {
@@ -124,6 +124,8 @@
 
     audio.addEventListener('play', function () {
         setPlaying(true);
+        /* 第一次播放后再把曲目信息显出来，留给打开的人一点悬念 */
+        root.classList.add('is-revealed');
         say('');
     });
 

@@ -43,7 +43,10 @@
         document.getElementById('year').textContent = new Date().getFullYear();
     </script>
 
-    <!-- 全局看板娘：所有页面右下角（template/static/theresa.html） -->
+    <!-- 全局看板娘：所有页面右下角（template/static/theresa.html）
+         某一页不想要，就在它的 metadata.yaml 里写 theresa: false -->
+    <% if (!(typeof theresa !== 'undefined' && theresa === false)) { %>
     {{static/theresa.html}}
+    <% } %>
 </body>
 </html>

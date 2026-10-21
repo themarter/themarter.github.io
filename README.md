@@ -74,6 +74,7 @@ description: 一句话描述（会出现在首页列表）
 date: 2026-10-20
 order: 10        # 可选，越大越靠前
 published: true  # 可选，false 则不出现在首页列表
+theresa: false   # 可选，这一页不挂右下角看板娘（连脚本都不加载）
 ```
 
 首页的页面列表由 `template/ejs/pages-list.ejs` 渲染，构建时扫描 `origin/` 自动生成，
@@ -89,6 +90,9 @@ published: true  # 可选，false 则不出现在首页列表
 - **右上角 ×**：本次会话隐藏（关掉标签页再开就又有了）
 - 窗口宽度 < 480px 时自动不加载，省流量；`document.hidden` 时暂停渲染
 
+某一页不想要看板娘（比如 `/liar/`），在该页的 `metadata.yaml` 写 `theresa: false`，
+构建时整段引用都不会输出。彻底不想要：删掉 `template/layout.html` 里的 `{{static/theresa.html}}`。
+
 技术：官方 spine-webgl **3.8** 运行时（`origin/assets/spine/spine-webgl-3.8.js`）+ RenderBuild 静态托管。
 模型是 `enemy_1554_lrtsia`（3.8 二进制 skel / atlas / png，合计约 470KB），首屏用 `defer` 异步加载，
 不阻塞页面；模型数据用 `fetch` 拿，纹理预加载后才建 `GLTexture`（否则 atlas 的 UV 会按 0 尺寸算错）。
@@ -99,8 +103,6 @@ published: true  # 可选，false 则不出现在首页列表
 从 [Ark-Models](https://github.com/isHarryh/Ark-Models) 的 `models_enemies/` 按需下载。
 
 > 素材版权归上海鹰角网络所有，仓库说明为“仅供学习交流，请勿商用”。
-
-不想用看板娘了：删掉 `template/layout.html` 里 `{{static/theresa.html}}` 那一行即可。
 
 ## 统计脚本
 
