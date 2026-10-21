@@ -1,0 +1,66 @@
+<link rel="stylesheet" href="/assets/liar/liar.css">
+
+<section class="liar">
+    <div class="liar__ambient" aria-hidden="true">
+        <span class="liar__orb liar__orb--a"></span>
+        <span class="liar__orb liar__orb--b"></span>
+        <span class="liar__orb liar__orb--c"></span>
+    </div>
+
+    <div class="liar__stage">
+        <div class="liar__disc" aria-hidden="true">
+            <div class="liar__label"><span>liar</span></div>
+            <div class="liar__hole"></div>
+        </div>
+        <div class="liar__pulse" aria-hidden="true"></div>
+    </div>
+
+    <p class="eyebrow">Now Playing</p>
+    <h1 class="liar__title">liar</h1>
+    <p class="liar__meta">
+        幻琉 · 宇宙冷漠
+        <span class="liar__sep">/</span>
+        <span class="liar__loop">循环播放</span>
+    </p>
+
+    <audio class="liar__audio" src="/assets/liar/liar-bgm.mp3" loop preload="auto" playsinline></audio>
+
+    <div class="liar__player">
+        <button class="liar__toggle" type="button" aria-label="播放">
+            <svg class="liar__icon liar__icon--play" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 5.5v13l10-6.5z" fill="currentColor"/>
+            </svg>
+            <svg class="liar__icon liar__icon--pause" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="8" y="5" width="3" height="14" rx="1.2" fill="currentColor"/>
+                <rect x="14" y="5" width="3" height="14" rx="1.2" fill="currentColor"/>
+            </svg>
+        </button>
+
+        <div class="liar__track">
+            <input class="liar__progress" type="range" min="0" max="1000" value="0" step="1"
+                   aria-label="播放进度" aria-valuetext="0:00">
+            <div class="liar__time">
+                <span class="liar__now">0:00</span>
+                <span class="liar__total">--:--</span>
+            </div>
+        </div>
+
+        <button class="liar__mute" type="button" aria-label="静音">
+            <svg class="liar__icon liar__icon--vol" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 9.5h3L11 6v12l-4-3.5H4z" fill="currentColor"/>
+                <path class="liar__wave" d="M14.5 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <path class="liar__wave" d="M17 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <svg class="liar__icon liar__icon--muted" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 9.5h3L11 6v12l-4-3.5H4z" fill="currentColor"/>
+                <path d="M15 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+        </button>
+    </div>
+
+    <p class="liar__hint" role="status"></p>
+
+    <p class="liar__back">这就是全部了。回 <a href="/">首页</a>。</p>
+</section>
+
+<script src="/assets/liar/liar.js" defer></script>
