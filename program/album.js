@@ -231,7 +231,9 @@ function main() {
             thumb: `t${id}.bin`,
             thumbIv: thumb.iv.toString('base64'),
         });
-        meta.push({ id, name: path.parse(name).name });
+        // 标题取文件名，去掉开头的排序编号（01-海边.jpg → 海边）
+        const caption = path.parse(name).name.replace(/^\d+\s*[-_.、]?\s*/, '').trim();
+        meta.push({ id, name: caption });
 
         console.log(
             `[album] ${id} ← ${name}  ${size.w}×${size.h}  (${Math.round(full.data.length / 1024)}KB + ${Math.round(thumb.data.length / 1024)}KB)`,
