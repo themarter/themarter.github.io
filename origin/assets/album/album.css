@@ -1,0 +1,416 @@
+/* ============================================================
+   /album —— 需要密码的相册
+   结构见 origin/album/index.html，逻辑见 album.js
+   ============================================================ */
+
+.album {
+    position: relative;
+    min-height: calc(100vh - 380px);
+}
+
+/* 相册页放宽正文宽度（照片留给它多点地方）；不支持的浏览器就沿用 760px */
+.site-main:has(> .album) {
+    max-width: 1080px;
+}
+
+/* 显隐一律用 hidden 属性控制；下面这些块级/网格元素会覆盖 UA 的 [hidden] 规则，必须显式兜回来 */
+.album [hidden] {
+    display: none !important;
+}
+
+/* ---------- 密码门 ---------- */
+.album__gate {
+    max-width: 460px;
+    margin: 6vh auto 0;
+    text-align: center;
+}
+
+.album__gate .eyebrow {
+    margin: 0 0 14px;
+}
+
+.album__title {
+    margin: 0 0 12px;
+    font-size: clamp(26px, 4vw, 34px);
+    line-height: 1.25;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+}
+
+.album__title--small {
+    font-size: 22px;
+    margin: 0;
+}
+
+.album__sub {
+    margin: 0 0 30px;
+    font-size: 14.5px;
+    color: var(--muted, #6b7076);
+}
+
+.album__field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px 6px 22px;
+    background: #fff;
+    border: 1px solid var(--line, #e6e2dc);
+    border-radius: 999px;
+    box-shadow: 0 10px 26px -22px rgba(25, 26, 28, 0.5);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.album__field:focus-within {
+    border-color: #cfc9c0;
+    box-shadow: 0 12px 30px -20px rgba(25, 26, 28, 0.55);
+}
+
+.album__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink, #191a1c);
+    letter-spacing: 0.04em;
+}
+
+.album__input::placeholder {
+    color: var(--faint, #9aa0a6);
+    letter-spacing: 0.02em;
+}
+
+.album__submit {
+    flex: none;
+    border: 0;
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 999px;
+    background: #191a1c;
+    color: #fbfaf8;
+    font: inherit;
+    font-size: 14px;
+    transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.album__submit:hover {
+    transform: translateY(-1px);
+}
+
+.album__submit:active {
+    transform: translateY(0);
+}
+
+.album__submit[disabled] {
+    opacity: 0.55;
+    cursor: default;
+    transform: none;
+}
+
+.album__error {
+    min-height: 1.4em;
+    margin: 14px 0 0;
+    font-size: 13px;
+    color: #b4453c;
+}
+
+.album__gate.is-shaking .album__field {
+    animation: album-shake 0.36s ease;
+}
+
+@keyframes album-shake {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-7px); }
+    40%      { transform: translateX(6px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(3px); }
+}
+
+/* ---------- 相册主体 ---------- */
+.album__view {
+    animation: album-fade 0.5s ease both;
+}
+
+@keyframes album-fade {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.album__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line, #e6e2dc);
+}
+
+.album__actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.album__count {
+    font-size: 13px;
+    color: var(--faint, #9aa0a6);
+    font-variant-numeric: tabular-nums;
+}
+
+.album__lock {
+    border: 1px solid var(--line, #e6e2dc);
+    background: transparent;
+    color: var(--muted, #6b7076);
+    font: inherit;
+    font-size: 13px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.album__lock:hover {
+    border-color: #d3cec6;
+    color: var(--ink, #191a1c);
+}
+
+/* 瀑布流：行高拆成 6px 的细轨，JS 按图片比例算每格跨多少行 */
+.album__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: 6px;
+    gap: 14px;
+    align-items: start;
+}
+
+.album__item {
+    align-self: start;
+    margin: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f1eee8;
+    position: relative;
+    cursor: zoom-in;
+}
+
+.album__item::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    box-shadow: 0 0 0 1px rgba(25, 26, 28, 0.05) inset;
+    pointer-events: none;
+}
+
+.album__item img {
+    display: block;
+    width: 100%;
+    height: auto;
+    opacity: 0;
+    transition: opacity 0.45s ease, transform 0.5s ease;
+}
+
+.album__item img.is-ready {
+    opacity: 1;
+}
+
+.album__item:hover img.is-ready {
+    transform: scale(1.015);
+}
+
+.album__item.is-broken {
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    color: var(--faint, #9aa0a6);
+    cursor: default;
+}
+
+.album__item.is-broken::before {
+    content: "解不出来";
+}
+
+/* 占位微光（高度由 aspect-ratio 撑住，图出来时不会跳） */
+.album__item.is-pending {
+    background: linear-gradient(100deg, #f1eee8 30%, #e9e5de 50%, #f1eee8 70%);
+    background-size: 240% 100%;
+    animation: album-shimmer 1.5s linear infinite;
+}
+
+@keyframes album-shimmer {
+    from { background-position: 140% 0; }
+    to   { background-position: -40% 0; }
+}
+
+.album__empty {
+    margin: 40px 0 0;
+    padding: 34px 24px;
+    border: 1px dashed var(--line, #e6e2dc);
+    border-radius: 14px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 2.1;
+    color: var(--muted, #6b7076);
+}
+
+.album__empty code {
+    background: #f1eee8;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.92em;
+}
+
+/* ---------- 大图 ---------- */
+.album__lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: grid;
+    place-items: center;
+    padding: 40px;
+    background: rgba(14, 15, 17, 0.93);
+    backdrop-filter: blur(6px);
+    animation: album-fade 0.25s ease both;
+}
+
+.album__figure {
+    margin: 0;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.album__photo {
+    max-width: min(1100px, 88vw);
+    max-height: 78vh;
+    border-radius: 8px;
+    box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.9);
+    background: #222;
+}
+
+.album__caption {
+    font-size: 13px;
+    color: rgba(244, 241, 234, 0.72);
+    letter-spacing: 0.03em;
+}
+
+.album__close,
+.album__nav {
+    position: absolute;
+    border: 0;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.66);
+    cursor: pointer;
+    transition: color 0.16s ease, background-color 0.16s ease;
+}
+
+.album__close {
+    top: 18px;
+    right: 22px;
+    width: 40px;
+    height: 40px;
+    font-size: 26px;
+    line-height: 1;
+    border-radius: 50%;
+}
+
+.album__close::before {
+    content: "\00d7";
+}
+
+.album__close:hover,
+.album__nav:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.album__nav {
+    top: 50%;
+    width: 48px;
+    height: 72px;
+    margin-top: -36px;
+    border-radius: 10px;
+    font-size: 26px;
+}
+
+.album__nav::before {
+    content: "";
+    display: block;
+    width: 12px;
+    height: 12px;
+    margin: 0 auto;
+    border-top: 1.5px solid currentColor;
+    border-right: 1.5px solid currentColor;
+}
+
+.album__nav--prev {
+    left: 12px;
+}
+
+.album__nav--prev::before {
+    transform: rotate(-135deg);
+    margin-left: 5px;
+}
+
+.album__nav--next {
+    right: 12px;
+}
+
+.album__nav--next::before {
+    transform: rotate(45deg);
+    margin-right: 5px;
+}
+
+.album__nav[disabled] {
+    opacity: 0.2;
+    cursor: default;
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 780px) {
+    .album__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: 5px;
+        gap: 10px;
+    }
+
+    .album__item {
+        border-radius: 10px;
+    }
+
+    .album__gate {
+        margin-top: 3vh;
+    }
+
+    .album__lightbox {
+        padding: 16px;
+    }
+
+    .album__photo {
+        max-height: 72vh;
+    }
+
+    .album__nav {
+        width: 40px;
+        height: 56px;
+        margin-top: -28px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .album__view,
+    .album__lightbox {
+        animation: none;
+    }
+
+    .album__item.is-pending {
+        animation: none;
+    }
+}

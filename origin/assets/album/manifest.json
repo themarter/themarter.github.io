@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "kdf": {
+    "algo": "PBKDF2",
+    "hash": "SHA-256",
+    "iterations": 250000,
+    "salt": "cKuX9/MN4RQdaLMx2qBw2A=="
+  },
+  "meta": {
+    "file": "meta.bin",
+    "iv": "jQM4xoOraQ+8ymWz"
+  },
+  "items": []
+}

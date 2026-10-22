@@ -109,6 +109,40 @@ theresa: false   # 可选，这一页不挂右下角看板娘（连脚本都不�
 `template/static/analytics.html`，被 `template/layout.html` 引用，因此对全站所有页面生效
 （含首页、内容页、404）。换统计服务只改这一个文件。
 
+## 密码相册（/album/）
+
+静态站没有服务端，"密码"如果只在 JS 里判断，直接访问图片地址就绕过去了。所以这里是**真加密**：
+照片用密码派生的密钥（PBKDF2-SHA256, 25 万次迭代）加密成 AES-256-GCM 密文再上传，
+浏览器里输对密码才解得开。仓库里没有密码，也没有明文照片。
+
+**放照片**
+
+```bash
+# 1. 把照片丢进 photos/（这个目录的内容不会进仓库）
+# 2. 加密并生成清单
+ALBUM_PASSWORD=你的密码 node program/album.js ./photos
+# 3. 构建、推送
+npm run build && git add -A && git commit -m "album: 更新照片" && git push
+```
+
+清空相册（保留空册）：`ALBUM_PASSWORD=… node program/album.js --clear`
+
+**做了什么**
+
+- 每张照片转两版 JPEG：正片长边 2000（q3）、缩略图长边 480（q5），都加密
+- 转码时 `-map_metadata -1`，把 EXIF（含 GPS）丢掉
+- `origin/assets/album/manifest.json` 只有盐、迭代次数、每张图的 IV 和尺寸，没有明文
+- 前端：缩略图滚到视口才解密；点开才解密正片；密钥存 `sessionStorage`，刷新这个标签页免重输；
+  「锁定」按钮清掉密钥回到密码门
+- 瀑布流用 `grid-auto-rows: 6px` + 按图片比例算行跨度，图片有 `aspect-ratio` 占位，
+  不解密也知道每格多高，加载时不跳版
+
+**注意**
+
+- 密码别写进仓库，也别写进 README；脚本只从 `ALBUM_PASSWORD` 或 `--password` 取
+- 已经推上去的旧密文用旧密码加密；换密码要重新跑一遍脚本（所有照片都会重新加密）
+- 忘了密码 = 照片解不回来，原图只在你本地 `photos/` 里
+
 ## 部署
 
 `.github/workflows/deploy.yml`：推送到 `main` 后自动 `npm ci` → `npm run build` →

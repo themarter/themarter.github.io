@@ -6,7 +6,8 @@
     "scripts": {
         "build": "node program/build.js",
         "dev": "node program/dev.js",
-        "publish": "node program/publish.js"
+        "publish": "node program/publish.js",
+        "album": "node program/album.js"
     },
     "author": "Marter",
     "license": "MIT",

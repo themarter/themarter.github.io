@@ -1,0 +1,47 @@
+<link rel="stylesheet" href="/assets/album/album.css">
+
+<section class="album">
+    <!-- 密码门 -->
+    <form class="album__gate" novalidate>
+        <p class="eyebrow">Private</p>
+        <h1 class="album__title">这里需要密码</h1>
+        <p class="album__sub">照片是加密存的，密码不对就什么都解不出来。</p>
+
+        <div class="album__field">
+            <input class="album__input" type="password" name="password" placeholder="输入密码"
+                   autocomplete="current-password" spellcheck="false" aria-label="访问密码" autofocus>
+            <button class="album__submit" type="submit">进入</button>
+        </div>
+        <p class="album__error" role="alert"></p>
+    </form>
+
+    <!-- 相册 -->
+    <div class="album__view" hidden>
+        <header class="album__head">
+            <h1 class="album__title album__title--small">相册</h1>
+            <div class="album__actions">
+                <span class="album__count"></span>
+                <button class="album__lock" type="button">锁定</button>
+            </div>
+        </header>
+
+        <div class="album__grid"></div>
+        <p class="album__empty" hidden>
+            这里还没有照片。把照片放进仓库的 <code>photos/</code> 目录，
+            运行 <code>ALBUM_PASSWORD=… node program/album.js ./photos</code> 就会加密上架。
+        </p>
+    </div>
+
+    <!-- 大图 -->
+    <div class="album__lightbox" hidden>
+        <button class="album__nav album__nav--prev" type="button" aria-label="上一张"></button>
+        <button class="album__nav album__nav--next" type="button" aria-label="下一张"></button>
+        <button class="album__close" type="button" aria-label="关闭"></button>
+        <figure class="album__figure">
+            <img class="album__photo" alt="">
+            <figcaption class="album__caption"></figcaption>
+        </figure>
+    </div>
+</section>
+
+<script src="/assets/album/album.js" defer></script>
