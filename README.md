@@ -115,17 +115,25 @@ theresa: false   # 可选，这一页不挂右下角看板娘（连脚本都不�
 照片用密码派生的密钥（PBKDF2-SHA256, 25 万次迭代）加密成 AES-256-GCM 密文再上传，
 浏览器里输对密码才解得开。仓库里没有密码，也没有明文照片。
 
-**放照片**
+**放照片（一条命令）**
 
 ```bash
-# 1. 把照片丢进 photos/（这个目录的内容不会进仓库）
-# 2. 加密并生成清单
-ALBUM_PASSWORD=你的密码 node program/album.js ./photos
-# 3. 构建、推送
-npm run build && git add -A && git commit -m "album: 更新照片" && git push
+# 1. 把照片拷进 photos/（这个目录的内容不会进仓库）
+# 2. 双击项目根目录的 update-album.cmd，或者：
+npm run album:deploy
 ```
 
-清空相册（保留空册）：`ALBUM_PASSWORD=… node program/album.js --clear`
+它就做完了四件事：加密 `photos/` 里的照片 → 构建 → 提交 → 推送，GitHub Actions 随后自动部署，
+约一分钟后刷新 <https://themarter.github.io/album/> 就能看到。
+
+只要效果不要上线：`npm run album`（加密 + 构建，不提交），再 `npm run dev` 本地看。
+
+清空相册（保留空册）：`node program/album.js --clear && npm run build`
+
+密码存在项目根目录的 `.album-password`（第一行，已被 `.gitignore` 忽略，不会进仓库）；
+也可以用环境变量 `ALBUM_PASSWORD` 覆盖。
+
+照片按文件名排序（`01-xxx.jpg`、`02-xxx.jpg`…），想调整顺序就改文件名。支持 jpg/png/webp/bmp/tif。
 
 **做了什么**
 
@@ -139,7 +147,7 @@ npm run build && git add -A && git commit -m "album: 更新照片" && git push
 
 **注意**
 
-- 密码别写进仓库，也别写进 README；脚本只从 `ALBUM_PASSWORD` 或 `--password` 取
+- 密码别写进仓库，也别写进 README；脚本从 `.album-password`（本地，已忽略）或 `ALBUM_PASSWORD` 取
 - 已经推上去的旧密文用旧密码加密；换密码要重新跑一遍脚本（所有照片都会重新加密）
 - 忘了密码 = 照片解不回来，原图只在你本地 `photos/` 里
 

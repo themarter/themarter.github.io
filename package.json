@@ -7,7 +7,8 @@
         "build": "node program/build.js",
         "dev": "node program/dev.js",
         "publish": "node program/publish.js",
-        "album": "node program/album.js"
+        "album": "node program/album-deploy.js --no-push",
+        "album:deploy": "node program/album-deploy.js"
     },
     "author": "Marter",
     "license": "MIT",

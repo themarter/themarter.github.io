@@ -29,8 +29,22 @@ const IMAGE_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.t
 
 /* ---------- 参数 ---------- */
 
+/** 密码来源优先级：--password > ALBUM_PASSWORD > 本机 .album-password（已被 .gitignore 忽略） */
+function localPassword() {
+    const file = path.join(ROOT, '.album-password');
+    try {
+        return fs.readFileSync(file, 'utf8').split(/\r?\n/)[0].trim();
+    } catch (err) {
+        return '';
+    }
+}
+
 function parseArgs(argv) {
-    const args = { dir: path.join(ROOT, 'photos'), password: process.env.ALBUM_PASSWORD || '', clear: false };
+    const args = {
+        dir: path.join(ROOT, 'photos'),
+        password: process.env.ALBUM_PASSWORD || localPassword(),
+        clear: false,
+    };
     for (let i = 0; i < argv.length; i += 1) {
         const item = argv[i];
         if (item === '--clear') args.clear = true;
@@ -127,7 +141,11 @@ function main() {
     fs.mkdirSync(OUT_DIR, { recursive: true });
 
     if (!args.password) {
-        console.error('[album] 缺少密码。用 ALBUM_PASSWORD=xxx node program/album.js ./photos');
+        console.error(
+            '[album] 缺少密码。任选一种：\n' +
+                '  1) 在项目根目录建 .album-password，第一行写密码（不会进仓库）\n' +
+                '  2) ALBUM_PASSWORD=xxx node program/album.js ./photos',
+        );
         process.exit(1);
     }
 
