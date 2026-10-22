@@ -148,6 +148,9 @@ npm run album:deploy
 **注意**
 
 - 密码别写进仓库，也别写进 README；脚本从 `.album-password`（本地，已忽略）或 `ALBUM_PASSWORD` 取
+- **别用 GitHub 网页的 “Add file → Upload files” 往 `photos/` 传照片**：网页上传不受 `.gitignore` 约束，
+  原图会以明文进入公开仓库，而且会留在历史提交里。要放照片就走本地 `photos/` 目录。
+  `npm run album:deploy` 每次都会检查，发现 `photos/` 里有被跟踪的原图会自动移出版本控制。
 - 已经推上去的旧密文用旧密码加密；换密码要重新跑一遍脚本（所有照片都会重新加密）
 - 忘了密码 = 照片解不回来，原图只在你本地 `photos/` 里
 

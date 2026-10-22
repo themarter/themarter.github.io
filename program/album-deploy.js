@@ -41,6 +41,22 @@ function run(bin, args, options = {}) {
     return result;
 }
 
+/* ---------- 0. 安全检查：photos/ 里的原图不该被 git 跟踪 ---------- */
+
+const tracked = run('git', ['-c', 'core.quotepath=false', 'ls-files', 'photos'], { capture: true })
+    .stdout.split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.endsWith('.gitkeep'));
+
+if (tracked.length) {
+    console.log(`\n⚠ photos/ 里有 ${tracked.length} 个原图被 git 跟踪（明文会进公开仓库），已移出版本控制：`);
+    tracked.forEach((file) => {
+        console.log(`  ${file}`);
+        run('git', ['rm', '--cached', '-q', '--', file], { allowFail: true });
+    });
+    console.log('  本地文件都还在，加密后才会以密文形式上传。');
+}
+
 /* ---------- 1. 加密 ---------- */
 
 step('加密照片');
