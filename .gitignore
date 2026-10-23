@@ -9,10 +9,3 @@ template/generated/*
 .DS_Store
 Thumbs.db
 *.log
-
-# 相册原图：只加密后的密文进仓库，原图不进
-photos/*
-!photos/.gitkeep
-
-# 相册密码（本机使用，不进仓库）
-.album-password

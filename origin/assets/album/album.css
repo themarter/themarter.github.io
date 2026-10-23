@@ -18,117 +18,15 @@
     display: none !important;
 }
 
-/* ---------- 密码门 ---------- */
-.album__gate {
-    max-width: 460px;
-    margin: 6vh auto 0;
-    text-align: center;
-}
-
-.album__gate .eyebrow {
-    margin: 0 0 14px;
-}
-
+/* ---------- 相册主体 ---------- */
 .album__title {
-    margin: 0 0 12px;
-    font-size: clamp(26px, 4vw, 34px);
+    margin: 0;
+    font-size: 22px;
     line-height: 1.25;
     font-weight: 650;
     letter-spacing: -0.02em;
 }
 
-.album__title--small {
-    font-size: 22px;
-    margin: 0;
-}
-
-.album__sub {
-    margin: 0 0 30px;
-    font-size: 14.5px;
-    color: var(--muted, #6b7076);
-}
-
-.album__field {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 6px 6px 22px;
-    background: #fff;
-    border: 1px solid var(--line, #e6e2dc);
-    border-radius: 999px;
-    box-shadow: 0 10px 26px -22px rgba(25, 26, 28, 0.5);
-    transition: border-color 0.18s ease, box-shadow 0.18s ease;
-}
-
-.album__field:focus-within {
-    border-color: #cfc9c0;
-    box-shadow: 0 12px 30px -20px rgba(25, 26, 28, 0.55);
-}
-
-.album__input {
-    flex: 1 1 auto;
-    min-width: 0;
-    border: 0;
-    outline: none;
-    background: transparent;
-    font: inherit;
-    font-size: 15px;
-    color: var(--ink, #191a1c);
-    letter-spacing: 0.04em;
-}
-
-.album__input::placeholder {
-    color: var(--faint, #9aa0a6);
-    letter-spacing: 0.02em;
-}
-
-.album__submit {
-    flex: none;
-    border: 0;
-    cursor: pointer;
-    padding: 10px 20px;
-    border-radius: 999px;
-    background: #191a1c;
-    color: #fbfaf8;
-    font: inherit;
-    font-size: 14px;
-    transition: transform 0.16s ease, opacity 0.16s ease;
-}
-
-.album__submit:hover {
-    transform: translateY(-1px);
-}
-
-.album__submit:active {
-    transform: translateY(0);
-}
-
-.album__submit[disabled] {
-    opacity: 0.55;
-    cursor: default;
-    transform: none;
-}
-
-.album__error {
-    min-height: 1.4em;
-    margin: 14px 0 0;
-    font-size: 13px;
-    color: #b4453c;
-}
-
-.album__gate.is-shaking .album__field {
-    animation: album-shake 0.36s ease;
-}
-
-@keyframes album-shake {
-    0%, 100% { transform: translateX(0); }
-    20%      { transform: translateX(-7px); }
-    40%      { transform: translateX(6px); }
-    60%      { transform: translateX(-4px); }
-    80%      { transform: translateX(3px); }
-}
-
-/* ---------- 相册主体 ---------- */
 .album__view {
     animation: album-fade 0.5s ease both;
 }
@@ -149,33 +47,10 @@
     border-bottom: 1px solid var(--line, #e6e2dc);
 }
 
-.album__actions {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
 .album__count {
     font-size: 13px;
     color: var(--faint, #9aa0a6);
     font-variant-numeric: tabular-nums;
-}
-
-.album__lock {
-    border: 1px solid var(--line, #e6e2dc);
-    background: transparent;
-    color: var(--muted, #6b7076);
-    font: inherit;
-    font-size: 13px;
-    padding: 5px 12px;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: border-color 0.18s ease, color 0.18s ease;
-}
-
-.album__lock:hover {
-    border-color: #d3cec6;
-    color: var(--ink, #191a1c);
 }
 
 /* 瀑布流：行高拆成 6px 的细轨，JS 按图片比例算每格跨多少行 */
@@ -231,7 +106,7 @@
 }
 
 .album__item.is-broken::before {
-    content: "解不出来";
+    content: "图片加载失败";
 }
 
 /* 占位微光（高度由 aspect-ratio 撑住，图出来时不会跳） */
@@ -383,10 +258,6 @@
 
     .album__item {
         border-radius: 10px;
-    }
-
-    .album__gate {
-        margin-top: 3vh;
     }
 
     .album__lightbox {

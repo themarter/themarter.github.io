@@ -109,50 +109,32 @@ theresa: false   # 可选，这一页不挂右下角看板娘（连脚本都不�
 `template/static/analytics.html`，被 `template/layout.html` 引用，因此对全站所有页面生效
 （含首页、内容页、404）。换统计服务只改这一个文件。
 
-## 密码相册（/album/）
+## 相册（/album/）
 
-静态站没有服务端，"密码"如果只在 JS 里判断，直接访问图片地址就绕过去了。所以这里是**真加密**：
-照片用密码派生的密钥（PBKDF2-SHA256, 25 万次迭代）加密成 AES-256-GCM 密文再上传，
-浏览器里输对密码才解得开。仓库里没有密码，也没有明文照片。
+公开相册，没有密码。照片放进 `origin/album/photos/`，构建时自动扫描生成清单，页面自动显示。
 
-**放照片（一条命令）**
+**加照片**
 
-```bash
-# 1. 把照片拷进 photos/（这个目录的内容不会进仓库）
-# 2. 双击项目根目录的 update-album.cmd，或者：
-npm run album:deploy
-```
+1. 把图片放进 `origin/album/photos/`（也可以直接在 GitHub 网页上上传到这个目录）
+2. 提交推送，等 Actions 构建完；本地就是 `npm run build`
+3. 打开 <https://themarter.github.io/album/> 就能看到
 
-它就做完了四件事：加密 `photos/` 里的照片 → 构建 → 提交 → 推送，GitHub Actions 随后自动部署，
-约一分钟后刷新 <https://themarter.github.io/album/> 就能看到。
+支持 jpg / png / gif / webp / avif。按文件名自然排序（`1`、`2`、`10` 不会排成 `1、10、2`），
+开头的排序编号不进标题：`03-海边.jpg` → 标题「海边」。
 
-只要效果不要上线：`npm run album`（加密 + 构建，不提交），再 `npm run dev` 本地看。
+照片是原样发布的，不会压缩。手机上拍的原图常常 4~8MB，建议先把长边压到 2000px 左右再放进来，
+不然首屏会很慢。
 
-清空相册（保留空册）：`node program/album.js --clear && npm run build`
+**实现**
 
-密码存在项目根目录的 `.album-password`（第一行，已被 `.gitignore` 忽略，不会进仓库）；
-也可以用环境变量 `ALBUM_PASSWORD` 覆盖。
+- 构建时 `program/build.js` 扫这个目录，用 `program/image-size.js` 直接解析文件头
+  拿到宽高（不依赖第三方库），写 `public/album/manifest.json`
+- 前端 `origin/assets/album/album.js` 读清单，按图片比例算瀑布流每格跨几行，
+  图片未加载时版面也不会跳；点开是大图，支持 ←/→/Esc 和手机左右滑动，窄屏两列
+- 图片是公开的：跟着站点一起发布，拿到链接的人都能看，也会被统计脚本记一次浏览
 
-照片按文件名排序（`01-xxx.jpg`、`02-xxx.jpg`…），想调整顺序就改文件名。支持 jpg/png/webp/bmp/tif。
-
-**做了什么**
-
-- 每张照片转两版 JPEG：正片长边 2000（q3）、缩略图长边 480（q5），都加密
-- 转码时 `-map_metadata -1`，把 EXIF（含 GPS）丢掉
-- `origin/assets/album/manifest.json` 只有盐、迭代次数、每张图的 IV 和尺寸，没有明文
-- 前端：缩略图滚到视口才解密；点开才解密正片；密钥存 `sessionStorage`，刷新这个标签页免重输；
-  「锁定」按钮清掉密钥回到密码门
-- 瀑布流用 `grid-auto-rows: 6px` + 按图片比例算行跨度，图片有 `aspect-ratio` 占位，
-  不解密也知道每格多高，加载时不跳版
-
-**注意**
-
-- 密码别写进仓库，也别写进 README；脚本从 `.album-password`（本地，已忽略）或 `ALBUM_PASSWORD` 取
-- **别用 GitHub 网页的 “Add file → Upload files” 往 `photos/` 传照片**：网页上传不受 `.gitignore` 约束，
-  原图会以明文进入公开仓库，而且会留在历史提交里。要放照片就走本地 `photos/` 目录。
-  `npm run album:deploy` 每次都会检查，发现 `photos/` 里有被跟踪的原图会自动移出版本控制。
-- 已经推上去的旧密文用旧密码加密；换密码要重新跑一遍脚本（所有照片都会重新加密）
-- 忘了密码 = 照片解不回来，原图只在你本地 `photos/` 里
+> 早先这页是「AES 加密 + 密码门」，工具是当时的 `program/album.js`，代码还在 git 历史里
+> （`cc52867`）。如果哪天想改回私密，可以把它捡回来。
 
 ## 部署
 

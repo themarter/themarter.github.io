@@ -6,13 +6,15 @@
  *   2. 用 EJS 渲染首页的「全部页面」索引
  *        template/ejs/pages-list.ejs  ->  template/generated/pages-list.html
  *   3. 调用 RenderBuild，把 origin/ 渲染成 public/（套上 template/layout.html）
- *   4. 清理输出目录里不该公开的文件（metadata.yaml），修正 404 标题
+ *   4. 生成相册清单（origin/album/photos/ 里的图片 → public/album/manifest.json）
+ *   5. 清理输出目录里不该公开的文件（metadata.yaml），修正 404 标题
  */
 
 const fs = require('fs');
 const path = require('path');
 const ejs = require('ejs');
 const yaml = require('js-yaml');
+const { imageSize } = require('./image-size');
 
 const ROOT = path.resolve(__dirname, '..');
 const ORIGIN = path.join(ROOT, 'origin');
@@ -90,8 +92,48 @@ function renderPagesList(pages) {
     console.log(`[build] 页面索引已生成，共 ${pages.length} 项`);
 }
 
-/** 移除构建产物里的 metadata.yaml，并修正 404 标题 */
-function cleanOutput() {
+/** 相册：扫 origin/album/photos/ 里的图片，生成 public/album/manifest.json */
+function generateAlbumManifest() {
+    const photoDir = path.join(ORIGIN, 'album', 'photos');
+    const outDir = path.join(PUBLIC, 'album');
+    const outFile = path.join(outDir, 'manifest.json');
+
+    if (!fs.existsSync(photoDir)) {
+        console.warn('[build] 未找到 origin/album/photos/，相册清单跳过');
+        return 0;
+    }
+
+    const collator = new Intl.Collator('zh-Hans-CN', { numeric: true, sensitivity: 'base' });
+    const files = fs
+        .readdirSync(photoDir, { withFileTypes: true })
+        .filter((entry) => entry.isFile() && /\.(jpe?g|png|gif|webp|avif)$/i.test(entry.name))
+        .map((entry) => entry.name)
+        .sort(collator.compare);
+
+    const photos = files.map((name) => {
+        let size = null;
+        try {
+            size = imageSize(fs.readFileSync(path.join(photoDir, name)));
+        } catch (err) {
+            size = null;
+        }
+        // 标题取文件名，去掉开头的排序编号（01-海边.jpg → 海边）
+        const title = path.parse(name).name.replace(/^\d+\s*[-_.、]?\s*/, '').trim();
+        return {
+            src: `/album/photos/${encodeURIComponent(name)}`,
+            title,
+            w: size ? size.w : 0,
+            h: size ? size.h : 0,
+        };
+    });
+
+    fs.mkdirSync(outDir, { recursive: true });
+    fs.writeFileSync(outFile, JSON.stringify({ photos }, null, 2) + '\n', 'utf8');
+    console.log(`[build] 相册清单已生成，共 ${photos.length} 张`);
+    return photos.length;
+}
+
+/** 移除构建产物里的 metadata.yaml，并修正 404 标题 */function cleanOutput() {
     if (!fs.existsSync(PUBLIC)) return;
 
     let removed = 0;
@@ -134,6 +176,7 @@ async function build() {
     const RBuild = require('render-build');
     await RBuild.build('./');
 
+    generateAlbumManifest();
     cleanOutput();
 
     if (!fs.existsSync(path.join(PUBLIC, 'index.html'))) {
@@ -142,7 +185,18 @@ async function build() {
     console.log(`[build] 完成 -> ${path.relative(ROOT, PUBLIC)}/`);
 }
 
-module.exports = { ROOT, ORIGIN, TEMPLATE, GENERATED, PUBLIC, collectPages, renderPagesList, cleanOutput, build };
+module.exports = {
+    ROOT,
+    ORIGIN,
+    TEMPLATE,
+    GENERATED,
+    PUBLIC,
+    collectPages,
+    renderPagesList,
+    generateAlbumManifest,
+    cleanOutput,
+    build,
+};
 
 if (require.main === module) {
     build().catch((err) => {
