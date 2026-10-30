@@ -1,0 +1,194 @@
+<link rel="stylesheet" href="/assets/esp32/esp32.css">
+
+<section class="esp">
+    <header class="esp__head">
+        <p class="esp__kicker">ESP32 · 上位机</p>
+        <h1 class="esp__title">让她自己联网</h1>
+        <p class="esp__lede">
+            网页只管出图和发问，ESP32 负责接 Wi-Fi、收字节、把画面推上屏，顺便汇报自己现在的状态。
+            地址填对，灯变绿，就不用再找那根 USB-TTL 了。
+        </p>
+    </header>
+
+    <!-- ============ 状态条 ============ -->
+    <section class="esp-card esp-card--status">
+        <div class="esp-card__head">
+            <h2>它现在的样子</h2>
+            <span class="esp-muted" id="status-at">还没问过</span>
+        </div>
+
+        <dl class="esp-stats">
+            <div class="esp-stat"><dt>芯片</dt><dd id="s-chip">—</dd></div>
+            <div class="esp-stat"><dt>固件</dt><dd id="s-fw">—</dd></div>
+            <div class="esp-stat"><dt>Wi-Fi</dt><dd id="s-ssid">—</dd></div>
+            <div class="esp-stat"><dt>信号</dt><dd id="s-rssi">—</dd></div>
+            <div class="esp-stat"><dt>局域网地址</dt><dd id="s-ip">—</dd></div>
+            <div class="esp-stat"><dt>空闲内存</dt><dd id="s-heap">—</dd></div>
+            <div class="esp-stat"><dt>已收帧</dt><dd id="s-frames">—</dd></div>
+            <div class="esp-stat"><dt>运行时长</dt><dd id="s-up">—</dd></div>
+        </dl>
+    </section>
+
+    <div class="esp-grid">
+        <!-- ============ 链路 ============ -->
+        <section class="esp-card esp-card--link">
+            <div class="esp-card__head">
+                <h2>链路</h2>
+                <span class="esp-dot" id="dot" data-state="idle"></span>
+            </div>
+
+            <label class="esp-field">
+                <span>设备地址</span>
+                <input id="base" type="text" inputmode="url" spellcheck="false" autocomplete="off"
+                       placeholder="192.168.1.42 或 esp32.local">
+            </label>
+
+            <div class="esp-row">
+                <button class="esp-btn esp-btn--primary" id="connect" type="button">连接</button>
+                <button class="esp-btn" id="drop-link" type="button" hidden>断开</button>
+                <label class="esp-check">
+                    <input id="auto" type="checkbox" checked>
+                    <span>每 5 秒自动问一次</span>
+                </label>
+            </div>
+
+            <p class="esp-hint" id="hint">ESP32 和这台设备要连在同一个 Wi-Fi 下。地址不用带 http://，形如 192.168.1.42。不知道它拿了哪个 IP，就去路由器后台的设备列表里找，或者插上串口看它开机打印的那一行。</p>
+            <p class="esp-warn" id="mixed" hidden></p>
+
+            <div class="esp-lat" id="lat" hidden>
+                <div class="esp-lat__head">
+                    <span>往返延迟</span>
+                    <b id="lat-now">—</b>
+                </div>
+                <div class="esp-lat__bars" id="spark"></div>
+                <span class="esp-lat__idle" id="lat-idle">再问几次，这里会长成一条曲线</span>
+            </div>
+        </section>
+
+        <!-- ============ 发图 ============ -->
+        <section class="esp-card esp-card--send">
+            <div class="esp-card__head">
+                <h2>发一张图</h2>
+                <span class="esp-muted" id="img-meta">还没选</span>
+            </div>
+
+            <div class="esp-drop" id="drop">
+                <input id="file" type="file" accept="image/*" hidden>
+                <canvas id="preview" width="128" height="160"></canvas>
+                <div class="esp-drop__hint">
+                    <strong>拖一张图进来</strong>
+                    <span>或点击选择，会自动裁成屏幕画幅</span>
+                </div>
+            </div>
+
+            <div class="esp-row esp-row--tight">
+                <label class="esp-field esp-field--inline">
+                    <span>方向</span>
+                    <select id="rot">
+                        <option value="0" selected>0°</option>
+                        <option value="1">90°</option>
+                        <option value="2">180°</option>
+                        <option value="3">270°</option>
+                    </select>
+                </label>
+                <label class="esp-field esp-field--inline">
+                    <span>适配</span>
+                    <select id="fit">
+                        <option value="cover" selected>填满裁切</option>
+                        <option value="contain">完整留边</option>
+                    </select>
+                </label>
+            </div>
+
+            <button class="esp-btn esp-btn--primary esp-btn--wide" id="send" type="button" disabled>
+                发送到屏幕
+            </button>
+            <div class="esp-bar"><i id="bar"></i></div>
+        </section>
+    </div>
+
+    <!-- ============ 问询 ============ -->
+    <section class="esp-card">
+        <div class="esp-card__head">
+            <h2>问一句</h2>
+            <span class="esp-muted">点一下发一条，回执写在下面</span>
+        </div>
+
+        <div class="esp-asks">
+            <button class="esp-ask" data-cmd="ping" type="button">
+                <b>PING</b><small>连打三次，看往返延迟</small>
+            </button>
+            <button class="esp-ask" data-cmd="status" type="button">
+                <b>状态</b><small>把上面那条重新问一遍</small>
+            </button>
+            <button class="esp-ask" data-cmd="selftest" type="button">
+                <b>屏幕自检</b><small>让屏出四角彩块</small>
+            </button>
+            <button class="esp-ask" data-cmd="clear" type="button">
+                <b>清屏</b><small>整屏填黑</small>
+            </button>
+            <button class="esp-ask esp-ask--danger" data-cmd="reboot" type="button">
+                <b>重启</b><small>软复位，约 3 秒</small>
+            </button>
+        </div>
+
+        <ul class="esp-answers" id="answers">
+            <li class="esp-answers__empty">还没有问过什么。</li>
+        </ul>
+    </section>
+
+    <!-- ============ 日志 ============ -->
+    <section class="esp-card">
+        <div class="esp-card__head">
+            <h2>日志</h2>
+            <button class="esp-btn esp-btn--tiny" id="clear-log" type="button">清空</button>
+        </div>
+        <ol class="esp-log" id="log"></ol>
+    </section>
+
+    <!-- ============ 接口 ============ -->
+    <details class="esp-card esp-card--api">
+        <summary>
+            <h2>ESP32 那边要实现什么</h2>
+            <span class="esp-muted">四个接口，够用了</span>
+        </summary>
+
+        <div class="esp-api">
+            <table>
+                <thead>
+                    <tr><th>方法与路径</th><th>作用</th><th>返回</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>GET /api/ping</code></td>
+                        <td>探活，只回最少的几个字段</td>
+                        <td><code>{"ok":true,"device":"esp32","fw":"0.1.0"}</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>GET /api/status</code></td>
+                        <td>上面那张状态条的全部内容</td>
+                        <td><code>{ok, chip, fw, up, wifi{ssid,rssi,ip}, heap{free,min}, screen{w,h,rot,frames,lastMs}}</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>POST /api/cmd</code></td>
+                        <td>一条指令，body 是 <code>{"cmd":"clear"}</code></td>
+                        <td><code>{"ok":true,"msg":"cleared"}</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>POST /api/frame?w=128&amp;h=160&amp;rot=0</code></td>
+                        <td>整帧 RGB565，高字节在前，body 是裸字节</td>
+                        <td><code>{"ok":true,"ms":812,"bytes":40960}</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="esp-note">
+                跨域必须放行：每个响应都带 <code>Access-Control-Allow-Origin: *</code>，
+                并且要处理 <code>OPTIONS</code> 预检（发图用的是 <code>application/octet-stream</code>，不是简单请求）。
+                字节格式跟 ST7735 那套完全一致，屏幕侧一行代码都不用改。
+            </p>
+        </div>
+    </details>
+</section>
+
+<script src="/assets/esp32/esp32.js" defer></script>

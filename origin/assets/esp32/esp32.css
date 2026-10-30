@@ -1,0 +1,663 @@
+/* ============================================================
+   /esp32 —— 让 ESP32 接管那块屏
+   结构见 origin/esp32/index.html，逻辑见 esp32.js
+   ============================================================ */
+
+.esp {
+    --esp-panel: var(--panel, #ffffff);
+    --esp-ink: var(--ink, #191a1c);
+    --esp-muted: var(--muted, #6b7076);
+    --esp-faint: var(--faint, #9aa0a6);
+    --esp-line: var(--line, #e6e2dc);
+    --esp-accent: var(--accent, #2f6b58);
+    --esp-ok: #2f6b58;
+    --esp-warn: #b4791f;
+    --esp-bad: #b6453c;
+    --esp-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 控制台类页面放宽一点 */
+.site-main:has(> .esp) {
+    max-width: 1000px;
+}
+
+.esp [hidden] {
+    display: none !important;
+}
+
+/* ---------- 头部 ---------- */
+.esp__head {
+    margin: 4px 0 2px;
+}
+
+.esp__kicker {
+    margin: 0 0 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--esp-accent);
+}
+
+.esp__title {
+    margin: 0 0 12px;
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 660;
+    letter-spacing: -0.025em;
+}
+
+.esp__lede {
+    margin: 0;
+    max-width: 56ch;
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: var(--esp-muted);
+}
+
+/* ---------- 卡片 ---------- */
+.esp-card {
+    border: 1px solid var(--esp-line);
+    border-radius: var(--radius, 14px);
+    background: var(--esp-panel);
+    padding: 18px 20px 20px;
+}
+
+.esp-card__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.esp-card__head h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 620;
+    letter-spacing: -0.01em;
+}
+
+.esp-muted {
+    font-size: 12.5px;
+    color: var(--esp-faint);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 状态条 ---------- */
+.esp-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    background: var(--esp-line);
+    border: 1px solid var(--esp-line);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.esp-stat {
+    background: var(--esp-panel);
+    padding: 13px 14px 12px;
+}
+
+.esp-stat dt {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--esp-faint);
+    margin-bottom: 7px;
+}
+
+.esp-stat dd {
+    margin: 0;
+    font-family: var(--esp-mono);
+    font-size: 15px;
+    line-height: 1.3;
+    color: var(--esp-ink);
+    word-break: break-all;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 未拿到数据时用浅色，避免看起来像真的读数 */
+.esp-stat dd.is-empty {
+    color: var(--esp-faint);
+    font-family: inherit;
+}
+
+/* ---------- 两列 ---------- */
+.esp-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: 16px;
+    align-items: stretch;
+}
+
+/* 左卡内容少，用弹性布局把提示压到底，两张卡看起来一样高 */
+.esp-card--link {
+    display: flex;
+    flex-direction: column;
+}
+
+.esp-card--link .esp-hint {
+    padding-top: 12px;
+}
+
+/* 延迟条：每次问询一根柱子，越靠右越新 */
+.esp-lat {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 96px;
+    margin-top: auto;
+    padding-top: 18px;
+}
+
+.esp-lat__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--esp-faint);
+}
+
+.esp-lat__head b {
+    font-family: var(--esp-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--esp-muted);
+}
+
+.esp-lat__bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 3px;
+    flex: 1 1 auto;
+    min-height: 54px;
+    padding-bottom: 1px;
+    border-bottom: 1px solid #f0ece5;
+}
+
+/* 柱子窄一点才像曲线，不然几根就把整行占满了 */
+.esp-lat__idle {
+    position: absolute;
+    left: 0;
+    bottom: 8px;
+    font-size: 11.5px;
+    color: var(--esp-faint);
+}
+
+.esp-lat__bars i {
+    flex: 1 1 auto;
+    min-width: 2px;
+    max-width: 10px;
+    border-radius: 1px 1px 0 0;
+    background: var(--esp-accent);
+    transition: height 0.25s ease;
+}
+
+/* ---------- 表单 ---------- */
+.esp-field {
+    display: block;
+    margin-bottom: 12px;
+}
+
+.esp-field > span {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: var(--esp-muted);
+}
+
+.esp-field input,
+.esp-field select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 11px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--esp-ink);
+    background: #fdfcfa;
+    border: 1px solid var(--esp-line);
+    border-radius: 9px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.esp-field input {
+    font-family: var(--esp-mono);
+    font-size: 13.5px;
+}
+
+.esp-field input:focus,
+.esp-field select:focus {
+    border-color: var(--esp-accent);
+    box-shadow: 0 0 0 3px rgba(47, 107, 88, 0.1);
+}
+
+.esp-field--inline {
+    margin-bottom: 0;
+    flex: 1 1 0;
+}
+
+.esp-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.esp-row--tight {
+    margin-bottom: 14px;
+}
+
+.esp-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--esp-muted);
+    cursor: pointer;
+    user-select: none;
+}
+
+.esp-check input {
+    accent-color: var(--esp-accent);
+    margin: 0;
+}
+
+/* ---------- 按钮 ---------- */
+.esp-btn {
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--esp-ink);
+    background: #fff;
+    border: 1px solid var(--esp-line);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+.esp-btn:hover:not(:disabled) {
+    border-color: #d3cec6;
+    background: #faf8f5;
+}
+
+.esp-btn:active:not(:disabled) {
+    transform: translateY(0.5px);
+}
+
+.esp-btn--primary {
+    color: #fff;
+    background: var(--esp-accent);
+    border-color: var(--esp-accent);
+}
+
+.esp-btn--primary:hover:not(:disabled) {
+    background: #275a4a;
+    border-color: #275a4a;
+}
+
+.esp-btn--wide {
+    width: 100%;
+    padding: 10px 16px;
+}
+
+.esp-btn--tiny {
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--esp-muted);
+}
+
+.esp-btn:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+}
+
+/* ---------- 状态灯 ---------- */
+.esp-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #d6d2cb;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.03);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+.esp-dot[data-state="busy"] {
+    background: var(--esp-warn);
+    box-shadow: 0 0 0 4px rgba(180, 121, 31, 0.16);
+    animation: esp-pulse 1s ease-in-out infinite;
+}
+
+.esp-dot[data-state="on"] {
+    background: var(--esp-ok);
+    box-shadow: 0 0 0 4px rgba(47, 107, 88, 0.14);
+}
+
+.esp-dot[data-state="off"] {
+    background: var(--esp-bad);
+    box-shadow: 0 0 0 4px rgba(182, 69, 60, 0.14);
+}
+
+@keyframes esp-pulse {
+    50% { opacity: 0.45; }
+}
+
+/* ---------- 提示 ---------- */
+.esp-hint {
+    margin: 12px 0 0;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--esp-faint);
+}
+
+.esp-hint[data-tone="bad"] { color: var(--esp-bad); }
+.esp-hint[data-tone="ok"]  { color: var(--esp-ok); }
+
+.esp-warn {
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: #7a5210;
+    background: #fdf6e6;
+    border: 1px solid #f0e0be;
+    border-radius: 9px;
+}
+
+.esp-warn code {
+    font-family: var(--esp-mono);
+    font-size: 12px;
+    background: rgba(122, 82, 16, 0.08);
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+/* ---------- 选图 ---------- */
+.esp-drop {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    min-height: 150px;
+    padding: 14px;
+    border: 1px dashed #dcd7cf;
+    border-radius: 11px;
+    background: #fbfaf8;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.esp-drop:hover,
+.esp-drop.is-over {
+    border-color: var(--esp-accent);
+    background: #f7faf8;
+}
+
+.esp-drop canvas {
+    display: none;
+    width: auto;
+    height: 132px;
+    max-width: 45%;
+    border-radius: 6px;
+    background: #000;
+    image-rendering: pixelated;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.16);
+}
+
+.esp-drop.has-image canvas {
+    display: block;
+}
+
+.esp-drop__hint {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+}
+
+.esp-drop.has-image .esp-drop__hint {
+    text-align: left;
+}
+
+.esp-drop__hint strong {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--esp-ink);
+}
+
+.esp-drop__hint span {
+    font-size: 12.5px;
+    color: var(--esp-faint);
+    line-height: 1.6;
+}
+
+/* ---------- 进度 ---------- */
+.esp-bar {
+    height: 3px;
+    margin-top: 10px;
+    border-radius: 2px;
+    background: #efebe5;
+    overflow: hidden;
+}
+
+.esp-bar i {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--esp-accent);
+    transition: width 0.16s linear;
+}
+
+/* 上传没有真实的进度事件，就用一条来回跑的光条，别假装知道百分比 */
+.esp-bar.is-run i {
+    width: 34%;
+    animation: esp-run 1.05s ease-in-out infinite;
+}
+
+@keyframes esp-run {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(295%); }
+}
+
+.esp-bar.is-done i {
+    background: var(--esp-ok);
+}
+
+/* ---------- 问询 ---------- */
+.esp-asks {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.esp-ask {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 11px 12px;
+    text-align: left;
+    font-family: inherit;
+    background: #fdfcfa;
+    border: 1px solid var(--esp-line);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.esp-ask:hover:not(:disabled) {
+    background: #f7faf8;
+    border-color: #cfdcd6;
+}
+
+.esp-ask:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.esp-ask b {
+    font-size: 13.5px;
+    font-weight: 620;
+    color: var(--esp-ink);
+}
+
+.esp-ask small {
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--esp-faint);
+}
+
+.esp-ask--danger b { color: var(--esp-bad); }
+
+.esp-answers {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--esp-line);
+}
+
+.esp-answers li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 9px 2px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    border-bottom: 1px solid #f2efe9;
+}
+
+.esp-answers li:last-child { border-bottom: 0; }
+
+.esp-answers__empty {
+    color: var(--esp-faint);
+}
+
+.esp-answers time {
+    flex: none;
+    font-family: var(--esp-mono);
+    font-size: 11.5px;
+    color: var(--esp-faint);
+    font-variant-numeric: tabular-nums;
+}
+
+.esp-answers b {
+    flex: none;
+    font-weight: 600;
+}
+
+.esp-answers span {
+    color: var(--esp-muted);
+    word-break: break-word;
+}
+
+.esp-answers li[data-tone="ok"] b { color: var(--esp-ok); }
+.esp-answers li[data-tone="bad"] b { color: var(--esp-bad); }
+
+/* ---------- 日志 ---------- */
+.esp-log {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 190px;
+    overflow-y: auto;
+    font-family: var(--esp-mono);
+    font-size: 12px;
+    line-height: 1.75;
+    color: var(--esp-muted);
+}
+
+.esp-log li {
+    display: flex;
+    gap: 10px;
+    padding: 1px 0;
+}
+
+.esp-log time {
+    flex: none;
+    color: var(--esp-faint);
+}
+
+.esp-log li[data-tone="bad"] { color: var(--esp-bad); }
+.esp-log li[data-tone="ok"]  { color: var(--esp-ok); }
+
+/* ---------- 接口说明 ---------- */
+.esp-card--api summary {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.esp-card--api summary::-webkit-details-marker { display: none; }
+
+.esp-card--api summary h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 620;
+}
+
+.esp-card--api[open] summary {
+    margin-bottom: 14px;
+}
+
+.esp-api table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+
+.esp-api th,
+.esp-api td {
+    padding: 9px 10px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid #f2efe9;
+}
+
+.esp-api th {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--esp-faint);
+    border-bottom-color: var(--esp-line);
+}
+
+.esp-api code {
+    font-family: var(--esp-mono);
+    font-size: 11.5px;
+    color: #3b3f44;
+    word-break: break-all;
+}
+
+.esp-note {
+    margin: 14px 0 0;
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: var(--esp-faint);
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 760px) {
+    .esp-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .esp-grid { grid-template-columns: minmax(0, 1fr); }
+    .esp-asks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .esp-title { font-size: 25px; }
+    .esp-drop { gap: 12px; }
+    .esp-drop canvas { max-width: 40%; height: 118px; }
+    .esp-card { padding: 16px 16px 18px; }
+}

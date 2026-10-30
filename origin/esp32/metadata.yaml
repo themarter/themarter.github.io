@@ -1,0 +1,4 @@
+title: ESP32 上位机
+description: 让 ESP32 接管那块屏：Wi-Fi 收图、SPI 上屏，顺手汇报自己的芯片、网络和内存。
+date: 2026-10-30
+pagetype: page
