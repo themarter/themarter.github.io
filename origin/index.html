@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="/assets/button/button.css">
+
 <section>
     <p class="eyebrow">Personal Space</p>
     <h1>Marter 的个人空间</h1>
@@ -5,6 +7,47 @@
         一个安静的角落。放我做过的东西、写过的东西，以及一些还没想清楚的想法。
     </p>
 </section>
+
+<!-- 公共按钮：状态存在 ntfy.sh 的公开频道上，跨浏览器共享。见 assets/button/button.js -->
+<section class="pb">
+    <header class="pb__head">
+        <p class="pb__kicker">Shared Button</p>
+        <h2 class="pb__title">公共按钮</h2>
+        <p class="pb__lede">
+            按一下，它就一直是按下去的；再按一下，它才弹起来。<br>
+            这个状态不在你本地，谁打开这一页，看到的都是现在这样。
+        </p>
+    </header>
+
+    <div class="pb__stage">
+        <div class="pb__plate">
+            <i class="pb__screw pb__screw--tl" aria-hidden="true"></i>
+            <i class="pb__screw pb__screw--tr" aria-hidden="true"></i>
+            <i class="pb__screw pb__screw--bl" aria-hidden="true"></i>
+            <i class="pb__screw pb__screw--br" aria-hidden="true"></i>
+            <div class="pb__well">
+                <button class="pb__btn" id="pb-btn" type="button" aria-pressed="false"
+                        aria-label="公共按钮，按一下按下，再按一下弹起">
+                    <span class="pb__gloss" aria-hidden="true"></span>
+                    <span class="pb__text" id="pb-btn-text">按下去</span>
+                </button>
+            </div>
+            <div class="pb__led" aria-hidden="true"></div>
+        </div>
+    </div>
+
+    <div class="pb__readout" role="status" aria-live="polite">
+        <span class="pb__state" id="pb-state">弹起</span>
+        <span class="pb__dot">·</span>
+        <span id="pb-count">还没被按过</span>
+        <span class="pb__dot">·</span>
+        <span id="pb-time">等第一个人</span>
+    </div>
+
+    <p class="pb__foot" id="pb-foot">状态存在 ntfy.sh 的一个公开频道上，12 小时没人动它就会自己弹回去。</p>
+</section>
+
+<script src="/assets/button/button.js" defer></script>
 
 <section>
     <h2 class="section-title">硬件工具</h2>
