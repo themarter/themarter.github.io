@@ -162,6 +162,17 @@
         return res.ok;
     }
 
+    /* 收到的远端状态可能比本地旧：频道是最终一致的，刚发出去的那条，
+       下一次轮询/回拉不一定已经读得到。用「第几次按」当版本号，旧的丢掉，
+       否则会出现「按下去又被自己读回来的旧消息顶回弹起」。
+       注意首次加载不设这道门——那时候本地只是缓存，远端才是事实。 */
+    function applyRemote(remote) {
+        if (!remote || remote.n < state.n) return false;
+        apply(remote);
+        saveLocal(remote);
+        return true;
+    }
+
     /* ---------------- 交互 ---------------- */
 
     async function press() {
@@ -185,10 +196,7 @@
         // 以服务器上的顺序为准：万一两个人同时按，这里会把结果拉平
         setTimeout(function () {
             fetchState().then(function (s) {
-                if (s) {
-                    apply(s);
-                    saveLocal(s);
-                }
+                if (applyRemote(s)) setOffline(false);
             }).catch(function () { /* 忽略 */ });
         }, 700);
     }
@@ -234,8 +242,7 @@
             try {
                 const s = parseMsg(JSON.parse(ev.data));
                 if (s) {
-                    apply(s);
-                    saveLocal(s);
+                    applyRemote(s);
                     setOffline(false);
                 }
             } catch (e) { /* 心跳 */ }
@@ -244,10 +251,7 @@
 
     setInterval(function () {
         fetchState().then(function (s) {
-            if (s && (s.t !== state.t || s.down !== state.down)) {
-                apply(s);
-                saveLocal(s);
-            }
+            applyRemote(s);
             setOffline(false);
         }).catch(function () { /* 网络抖一下不提示，别吓人 */ });
     }, POLL_MS);
@@ -258,10 +262,7 @@
     document.addEventListener('visibilitychange', function () {
         if (!document.hidden) {
             fetchState().then(function (s) {
-                if (s && (s.t !== state.t || s.down !== state.down)) {
-                    apply(s);
-                    saveLocal(s);
-                }
+                applyRemote(s);
             }).catch(function () { /* 忽略 */ });
         }
     });
