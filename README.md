@@ -1,10 +1,15 @@
-# Marter 的个人空间
+# Marter 的个人空间（备用站）
+
+> ⚠️ **内容不在这里改。** 正式的源仓库是 [themarter/blog](https://github.com/themarter/blog)，
+> 站点主域名 `blog.marteria.top`。本仓库的 Actions 会拉取 `blog` 的 `main` 分支来构建，
+> 每小时自动同步一次（也可手动 `workflow_dispatch`），所以两个站点内容始终一致。
+>
+> 本仓库保留的意义：`https://themarter.github.io/` 作为**备用入口**，
+> 万一自定义域名/DNS 出问题，这里还能访问。
 
 静态站点，基于 [RenderBuild](https://github.com/RavelloH/RenderBuild) 构建，GitHub Actions 自动发布到 GitHub Pages。
 
-线上地址：<https://themarter.github.io/>
-
-本地工作副本：`D:\迅雷下载\marter's space`（以此为准）
+线上地址：<https://blog.marteria.top/>（主） · <https://themarter.github.io/>（备用）
 
 ## 目录结构
 

@@ -1,9 +1,16 @@
 name: Deploy to GitHub Pages
 
+# 本仓库现在只是「备用站」：内容统一从 themarter/blog 拉，这里只负责构建 + 部署。
+# 所以改内容请改 blog 仓库，这里会自动跟上（每小时 + 手动触发 + 改本文件时）。
 on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
   push:
     branches: [main]
-  workflow_dispatch:
+    paths:
+      - '.github/workflows/**'
+      - 'README.md'
 
 permissions:
   contents: read
@@ -18,8 +25,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout content from themarter/blog (single source of truth)
         uses: actions/checkout@v7
+        with:
+          repository: themarter/blog
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
